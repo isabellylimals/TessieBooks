@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste API</title>
+</head>
+<body>
+    <h1>Teste de Conexão com API</h1>
+    <button onclick="testar()">Testar Registro</button>
+    <div id="resultado"></div>
+
+    <script>
+        const API_URL = "http://localhost:8080";
+
+        async function testar() {
+            const resultado = document.getElementById("resultado");
+            resultado.innerHTML = "Testando...";
+
+            try {
+                console.log("Iniciando teste...");
+                
+                const res = await fetch(`${API_URL}/auth/register`, {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json" 
+                    },
+                    body: JSON.stringify({
+                        name: "Teste",
+                        email: "teste" + Math.random().toString().substring(2, 8) + "@test.com",
+                        password: "123456"
+                    }),
+                });
+
+                console.log("Response status:", res.status);
+                console.log("Response headers:", res.headers);
+
+                const data = await res.json();
+                console.log("Response data:", data);
+
+                if (res.ok) {
+                    resultado.innerHTML = "<h2 style='color:green'>✓ Sucesso!</h2><p>" + JSON.stringify(data, null, 2) + "</p>";
+                } else {
+                    resultado.innerHTML = "<h2 style='color:red'>✗ Erro " + res.status + "</h2><p>" + JSON.stringify(data, null, 2) + "</p>";
+                }
+            } catch (err) {
+                console.error("Erro:", err);
+                resultado.innerHTML = "<h2 style='color:red'>✗ Erro de Conexão</h2><p>" + err.message + "</p><p>" + err.stack + "</p>";
+            }
+        }
+    </script>
+</body>
+</html>

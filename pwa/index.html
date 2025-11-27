@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TessieVerse</title>
+
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+  <!-- Tipografias clássicas -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;500;700&family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css?v=6" />
+
+</head>
+<body>
+  <div class="page-bg"></div>
+
+  <header class="header" id="app-header">
+    <h1 class="title">TessieVerse</h1>
+    <p class="subtitle">Sombras, tinta e papel em uma era vitoriana digital.</p>
+  </header>
+
+  <main class="container">
+    <!-- Login -->
+    <section id="login-section" class="card fade-in">
+      <h2 class="section-title">Entrar na Biblioteca</h2>
+
+      <label class="label">Email</label>
+      <input id="email" class="input" type="email" placeholder="seu.email@exemplo.com" />
+
+      <label class="label">Senha</label>
+      <input id="password" class="input" type="password" placeholder="••••••••" />
+
+      <button id="loginBtn" class="button main-btn">Acessar</button>
+      <p id="loginError" class="error"></p>
+
+      <div class="divider"></div>
+      <p class="section-description">Não tem conta? <a href="#" id="toggleRegister" class="link">Crie uma agora</a></p>
+    </section>
+
+    <!-- Cadastro -->
+    <section id="register-section" class="card fade-in hidden">
+      <h2 class="section-title">Criar Conta</h2>
+
+      <label class="label">Nome</label>
+      <input id="register-name" class="input" type="text" placeholder="Seu nome completo" />
+
+      <label class="label">Email</label>
+      <input id="register-email" class="input" type="email" placeholder="seu.email@exemplo.com" />
+
+      <label class="label">Senha</label>
+      <input id="register-password" class="input" type="password" placeholder="••••••••" />
+      <small class="info">Mínimo 6 caracteres</small>
+
+      <label class="label">Confirmar Senha</label>
+      <input id="register-password-confirm" class="input" type="password" placeholder="••••••••" />
+
+      <button id="registerBtn" class="button main-btn">Criar Conta</button>
+      <p id="registerError" class="error"></p>
+
+      <div class="divider"></div>
+      <p class="section-description">Já tem conta? <a href="#" id="toggleLogin" class="link">Faça login</a></p>
+    </section>
+
+    <!-- App principal -->
+    <section id="app-section" class="hidden fade-in">
+
+      <!-- Navegação superior -->
+      <nav class="top-nav">
+        <button class="nav-btn nav-active" data-target="books-section">Estante</button>
+        <button class="nav-btn" data-target="explore-section">Explorar</button>
+        <button class="nav-btn" data-target="feed-section">Feed</button>
+        <button class="nav-btn" data-target="reviews-section">Resenhas</button>
+        <button class="nav-btn" data-target="profile-section">Perfil</button>
+        <button class="nav-btn nav-danger" id="logoutBtn">Sair</button>
+      </nav>
+
+      <!-- Estante -->
+      <section id="books-section" class="app-card">
+        <h2 class="section-title with-border">Estante Digital</h2>
+        
+        <div class="tabs" style="display: flex; gap: 10px; margin-bottom: 15px;">
+          <button class="nav-btn tab-btn active" data-tab="my-books">Meus Livros</button>
+          <button class="nav-btn tab-btn" data-tab="all-books">Todos os Livros</button>
+        </div>
+
+        <div id="my-books" class="tab-content">
+          <div id="my-books-list" class="list-container"></div>
+        </div>
+
+        <div id="all-books" class="tab-content hidden">
+          <div id="all-books-list" class="list-container"></div>
+        </div>
+      </section>
+
+      <!-- Explorar Comunidade -->
+      <section id="explore-section" class="app-card hidden">
+        <h2 class="section-title with-border">Explorar Comunidade</h2>
+        <p class="section-description">Descubra leitores e suas paixões literárias.</p>
+
+        <div class="divider"></div>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+          <input id="search-users-input" class="input" type="text" placeholder="Buscar leitores..." style="flex: 1;" />
+          <button id="search-users-btn" class="button secondary-btn">Buscar</button>
+        </div>
+
+        <div id="users-list" class="list-container"></div>
+      </section>
+
+      <!-- Feed -->
+      <section id="feed-section" class="app-card hidden">
+        <h2 class="section-title with-border">Feed da Comunidade</h2>
+        <p class="section-description">
+          Reflexões, citações e pequenos delírios literários.
+        </p>
+
+        <div class="divider"></div>
+
+        <h3 class="section-subtitle">Compartilhe um pensamento</h3>
+        <form id="post-form" class="form">
+          <textarea id="post-content" class="textarea" rows="3" placeholder="O que você está pensando sobre literatura?"></textarea>
+          <button type="submit" class="button secondary-btn">Publicar</button>
+          <p id="postMessage" class="info"></p>
+        </form>
+
+        <div class="divider"></div>
+
+        <div id="feed-list" class="list-container"></div>
+      </section>
+
+      <!-- Resenhas -->
+      <section id="reviews-section" class="app-card hidden">
+        <h2 class="section-title with-border">Resenhas</h2>
+
+        <div id="reviews-list" class="list-container"></div>
+
+        <div class="divider"></div>
+
+        <h3 class="section-subtitle">Escrever uma nova resenha</h3>
+        <form id="review-form" class="form">
+          <label class="label">ID do Livro</label>
+          <input id="review-book-id" class="input" type="number" placeholder="Ex: 1" />
+
+          <label class="label">Título da Resenha</label>
+          <input id="review-title" class="input" type="text" placeholder="Um mergulho nas sombras de..." />
+
+          <label class="label">Texto</label>
+          <textarea id="review-text" class="textarea" rows="4" placeholder="Escreva sua análise literária..."></textarea>
+
+          <label class="label">Classificação (1-5 estrelas)</label>
+          <div class="stars-container" id="review-stars">
+            <span class="star" data-value="1">★</span>
+            <span class="star" data-value="2">★</span>
+            <span class="star" data-value="3">★</span>
+            <span class="star" data-value="4">★</span>
+            <span class="star" data-value="5">★</span>
+          </div>
+          <input id="review-rating" class="input hidden" type="number" min="1" max="5" value="5" />
+
+          <label class="label">Foto da Resenha (opcional)</label>
+          <input id="review-image" class="input" type="file" accept="image/*" />
+          <small class="info">Formatos: JPG, PNG (máx 5MB)</small>
+
+          <button type="submit" class="button secondary-btn">Publicar resenha</button>
+          <p id="reviewMessage" class="info"></p>
+        </form>
+      </section>
+
+      <!-- Perfil -->
+      <section id="profile-section" class="app-card hidden">
+        <h2 class="section-title with-border">Perfil do Leitor</h2>
+        <div id="profile-content" class="profile-card">
+          <p>Carregando seu perfil...</p>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

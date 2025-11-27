@@ -1,0 +1,68 @@
+package com.isabelly.tessiebooks.entity;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
+import lombok.Data;
+
+@Data
+@Entity
+@Table(name = "users")
+public class User implements UserDetails{
+@Override
+public Collection<? extends GrantedAuthority> getAuthorities() {
+    return List.of();
+}
+
+@Override
+public String getUsername() {
+    return email;
+}
+
+@Override
+public boolean isAccountNonExpired() { return true; }
+
+@Override
+public boolean isAccountNonLocked() { return true; }
+
+@Override
+public boolean isCredentialsNonExpired() { return true; }
+
+@Override
+public boolean isEnabled() { return true; }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private String email;
+    private String password;
+    private String bio;
+    private String profileImage;
+
+    // --- FOLLOWERS ---
+
+    @ManyToMany
+    @JsonIgnore
+    @JoinTable(
+        name = "user_following",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "following_id")
+    )
+    private List<User> following = new ArrayList<>();
+}

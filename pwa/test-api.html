@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API CORS</title>
+    <style>
+        body { font-family: monospace; margin: 20px; }
+        pre { background: #f0f0f0; padding: 10px; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Teste de Conexão com API</h1>
+    
+    <button onclick="testarOPTIONS()">1. Testar CORS (OPTIONS)</button>
+    <button onclick="testarGET()">2. Testar GET /books</button>
+    <button onclick="testarPOST()">3. Testar POST /auth/register</button>
+    
+    <pre id="output"></pre>
+
+    <script>
+        const API_URL = "http://localhost:8080";
+        const output = document.getElementById('output');
+
+        function log(msg) {
+            output.innerHTML += msg + '\n';
+            console.log(msg);
+        }
+
+        function clear() {
+            output.innerHTML = '';
+        }
+
+        async function testarOPTIONS() {
+            clear();
+            log("=== Testando CORS com OPTIONS ===\n");
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'OPTIONS'
+                });
+                log(`Status: ${response.status}`);
+                log(`CORS Headers:`);
+                log(`  Access-Control-Allow-Origin: ${response.headers.get('Access-Control-Allow-Origin')}`);
+                log(`  Access-Control-Allow-Methods: ${response.headers.get('Access-Control-Allow-Methods')}`);
+                log(`  Access-Control-Allow-Headers: ${response.headers.get('Access-Control-Allow-Headers')}`);
+                log('\n✓ CORS OK\n');
+            } catch (e) {
+                log(`✗ Erro: ${e.message}`);
+            }
+        }
+
+        async function testarGET() {
+            clear();
+            log("=== Testando GET /books ===\n");
+            try {
+                const response = await fetch(`${API_URL}/books`);
+                log(`Status: ${response.status}`);
+                const data = await response.json();
+                log(`Response: ${JSON.stringify(data, null, 2)}`);
+                log('\n✓ GET OK\n');
+            } catch (e) {
+                log(`✗ Erro: ${e.message}`);
+            }
+        }
+
+        async function testarPOST() {
+            clear();
+            log("=== Testando POST /auth/register ===\n");
+            const timestamp = Date.now();
+            const payload = {
+                name: `Teste${timestamp}`,
+                email: `teste${timestamp}@test.com`,
+                password: 'senha123'
+            };
+            log(`Payload: ${JSON.stringify(payload, null, 2)}\n`);
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                log(`Status: ${response.status}`);
+                const data = await response.json();
+                log(`Response: ${JSON.stringify(data, null, 2)}`);
+                log('\n✓ POST OK\n');
+            } catch (e) {
+                log(`✗ Erro: ${e.message}\n${e.stack}`);
+            }
+        }
+    </script>
+</body>
+</html>
