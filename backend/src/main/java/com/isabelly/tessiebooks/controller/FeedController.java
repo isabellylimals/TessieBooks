@@ -49,15 +49,14 @@ public class FeedController {
     }
 
     // DELETE /feed/{id} - deletar um post
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePost(@PathVariable Long id, Authentication auth) {
-        User user = (User) auth.getPrincipal();
-        Post post = postService.deletePost(id);
-
-        if (!post.getUser().getId().equals(user.getId())) {
-            return ResponseEntity.status(403).body("Você não pode deletar posts de outros usuários");
-        }
-
-        return ResponseEntity.ok("Post deletado com sucesso");
+@DeleteMapping("/{id}")
+public ResponseEntity<?> deletePost(@PathVariable Long id, Authentication auth) {
+    User user = (User) auth.getPrincipal();
+    Post post = postService.getPost(id); // Buscar primeiro
+    if (!post.getUser().getId().equals(user.getId())) {
+        return ResponseEntity.status(403).body("Você não pode deletar posts de outros usuários");
     }
+    postService.deletePost(id);
+    return ResponseEntity.ok("Post deletado com sucesso");
+}
 }

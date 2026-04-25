@@ -424,28 +424,78 @@ async function carregarMeusLivros() {
       const titulo = livro.title || livro.nome || "Título desconhecido";
       const autor = livro.author || livro.autor || "Autor desconhecido";
       const status = item.status || item.readingStatus || "—";
+      
+      // Pegamos os valores de progresso (caso existam no banco, senão iniciam em 0)
+      const pagAtual = item.paginasLidas || 0;  
+const pagTotal = item.paginasTotais || 0; 
+      const porcentagem = pagTotal > 0 ? Math.round((pagAtual / pagTotal) * 100) : 0;
 
-      card.innerHTML = `
-      <div class="item-header">
-        <h3 class="item-title">${titulo}</h3>
-        <span class="item-meta">de ${autor}</span>
-      </div>
-      <div class="item-body">
-        Status: <strong>${status}</strong>
-      </div>
-      <div class="item-actions">
-        <button class="button small-btn" data-book="${livro.id}" data-status="QUERO_LER">Quero ler</button>
-        <button class="button small-btn" data-book="${livro.id}" data-status="LENDO">Lendo</button>
-        <button class="button small-btn" data-book="${livro.id}" data-status="LIDO">Lido</button>
-      </div>
-    `;
+      // Montamos o HTML do Card
+      let cardHTML = `
+        <div class="item-header">
+          <h3 class="item-title">${titulo}</h3>
+          <span class="item-meta">de ${autor}</span>
+        </div>
+        <div class="item-body">
+          Status: <strong>${status}</strong>
+        </div>`;
 
+      // SE o status for LENDO, adicionamos o Diário de Leitura (Barra de Tinta)
+      if (status === "LENDO") {
+        cardHTML += `
+          <div class="reading-progress-container">
+              <div class="progress-info">
+                  <span>Progresso da Leitura</span>
+                  <span class="percentage">${porcentagem}%</span>
+              </div>
+              <div class="ink-progress-bar">
+                  <div class="ink-fill" style="width: ${porcentagem}%;"></div>
+              </div>
+              <div class="progress-inputs">
+                  <input type="number" class="p-input curr-page" value="${pagAtual}" placeholder="Pág.">
+                  <span>/</span>
+                  <input type="number" class="p-input total-pages" value="${pagTotal}" placeholder="Total">
+                  <button class="save-progress-btn" title="Salvar Progresso" 
+                    onclick="salvarProgressoLivro(${livro.id}, this)">✒️</button>
+              </div>
+          </div>
+        `;
+      }
+
+      // Adicionamos os botões de ação que você já tinha
+      cardHTML += `
+        <div class="item-actions">
+          <button class="button small-btn" data-book="${livro.id}" data-status="QUERO_LER">Quero ler</button>
+          <button class="button small-btn" data-book="${livro.id}" data-status="LENDO">Lendo</button>
+          <button class="button small-btn" data-book="${livro.id}" data-status="LIDO">Lido</button>
+        </div>
+      `;
+
+      card.innerHTML = cardHTML;
       myBooksList.appendChild(card);
     });
   } catch (err) {
     console.error(err);
     myBooksList.innerHTML =
       "<p class='error'>Erro ao carregar sua biblioteca. Tente novamente.</p>";
+  }
+}
+
+// NOVA FUNÇÃO: Captura os dados dos inputs e salva o progresso
+async function salvarProgressoLivro(bookId, btn) {
+  const container = btn.closest('.reading-progress-container');
+  const pagAtual = container.querySelector('.curr-page').value;
+const pagTotal = container.querySelector('.total-pages').value;
+
+await apiUpdateBookProgress(authToken, bookId, pagAtual, pagTotal);
+
+  try {
+    // Chamada para a API (vamos criar essa função no api.js no próximo passo)
+    await apiUpdateBookProgress(authToken, bookId, pagAtual, pagTotal);
+    alert("Progresso registrado no diário! ✒️");
+    carregarMeusLivros(); // Recarrega para atualizar a barra
+  } catch (err) {
+    alert("Erro ao salvar progresso: " + err.message);
   }
 }
 

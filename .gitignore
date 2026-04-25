@@ -1,0 +1,34 @@
+# Spring Boot
+application.properties
+application-dev.properties
+application-prod.yml
+*.log
+
+# Banco de dados
+*.db
+*.sqlite
+
+# IDE
+.idea/
+*.iml
+.settings/
+.classpath
+.project
+.vscode/
+
+# Build
+target/
+build/
+*.class
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets (NUNCA commitar)
+*.p12
+*.jks
+*.key
+*.pem
+.env
+.secrets

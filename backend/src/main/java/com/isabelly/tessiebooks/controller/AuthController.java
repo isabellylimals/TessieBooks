@@ -28,29 +28,52 @@ public class AuthController {
         this.jwtService = jwtService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
-        if (userRepository.findByEmail(req.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body(new ApiResponse("Email já registrado.", false));
-        }
-
-        if (req.getName() != null && userRepository.findByName(req.getName()).isPresent()) {
-            return ResponseEntity.badRequest().body(new ApiResponse("Nome de usuário já em uso.", false));
-        }
-
-        try {
-            User u = new User();
-            u.setName(req.getName());
-            u.setEmail(req.getEmail());
-            u.setPassword(encoder.encode(req.getPassword()));
-
-            userRepository.save(u);
-
-            return ResponseEntity.ok(new ApiResponse("Usuário registrado com sucesso!", true));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiResponse("Erro ao registrar: " + e.getMessage(), false));
-        }
+  @PostMapping("/register")
+public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
+    
+    // ✅ Validações manuais
+    if (req.getName() == null || req.getName().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(new ApiResponse("Nome é obrigatório", false));
     }
+    
+    if (req.getName().length() < 3) {
+        return ResponseEntity.badRequest().body(new ApiResponse("Nome deve ter no mínimo 3 caracteres", false));
+    }
+    
+    if (req.getEmail() == null || req.getEmail().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(new ApiResponse("Email é obrigatório", false));
+    }
+    
+    if (!req.getEmail().contains("@")) {
+        return ResponseEntity.badRequest().body(new ApiResponse("Email inválido", false));
+    }
+    
+    if (req.getPassword() == null || req.getPassword().length() < 6) {
+        return ResponseEntity.badRequest().body(new ApiResponse("Senha deve ter no mínimo 6 caracteres", false));
+    }
+    
+    // Seu código original continua...
+    if (userRepository.findByEmail(req.getEmail()).isPresent()) {
+        return ResponseEntity.badRequest().body(new ApiResponse("Email já registrado.", false));
+    }
+
+    if (req.getName() != null && userRepository.findByName(req.getName()).isPresent()) {
+        return ResponseEntity.badRequest().body(new ApiResponse("Nome de usuário já em uso.", false));
+    }
+
+    try {
+        User u = new User();
+        u.setName(req.getName());
+        u.setEmail(req.getEmail());
+        u.setPassword(encoder.encode(req.getPassword()));
+
+        userRepository.save(u);
+
+        return ResponseEntity.ok(new ApiResponse("Usuário registrado com sucesso!", true));
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(new ApiResponse("Erro ao registrar: " + e.getMessage(), false));
+    }
+}
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {

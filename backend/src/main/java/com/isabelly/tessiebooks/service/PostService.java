@@ -37,4 +37,9 @@ public class PostService {
         postRepository.delete(post);
         return post;
     }
+
+    public Post getPost(Long id) {
+    return postRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Post não encontrado"));
+}
 }

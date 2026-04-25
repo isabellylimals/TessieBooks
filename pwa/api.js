@@ -2,7 +2,38 @@
 const API_URL = "http://127.0.0.1:8080";
  // depois: https://api.SEUNOME.dns
 
-// LOGIN
+// api.js - Padronizar tratamento de erro
+async function handleResponse(res) {
+    const data = await res.json();
+    if (!res.ok) {
+        // Extrair mensagem de erro do backend
+        const message = data.message || data.error || JSON.stringify(data);
+        throw new Error(message);
+    }
+    return data;
+}
+
+// Exemplo em apiLogin
+async function apiLogin(email, password) {
+    const res = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+    });
+    return handleResponse(res);
+}
+async function fetchWithAuth(url, options = {}) {
+    const res = await fetch(url, options);
+    
+    if (res.status === 401) {
+        // Token expirado ou inválido
+        localStorage.removeItem("token");
+        alert("Sua sessão expirou. Faça login novamente.");
+        window.location.reload();
+        throw new Error("Não autorizado");
+    }
+    return res;
+}
 async function apiLogin(email, password) {
   const res = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
@@ -241,7 +272,31 @@ async function apiSetBookStatus(token, bookId, status) {
     throw err;
   }
 }
+// NOVA: Apenas para enviar o progresso de páginas (Diário)
+async function apiUpdateBookProgress(token, bookId, currentPage, totalPages) {
+  try {
+    // Note que a URL muda um pouco: /progress em vez de /status
+    const url = `${API_URL}/library/books/${bookId}/progress`; 
+    
+    const res = await fetch(url, {
+      method: "PUT", // PATCH é o ideal para atualizações parciais
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+    paginasLidas: parseInt(currentPage),   
+    paginasTotais: parseInt(totalPages)   
+})
+    });
 
+    if (!res.ok) throw new Error("Erro ao salvar páginas no diário.");
+    return { ok: true };
+  } catch (err) {
+    console.error("ERRO apiUpdateBookProgress:", err);
+    throw err;
+  }
+}
 
 // Seguir / deixar de seguir
 async function apiFollowUser(token, userId) {

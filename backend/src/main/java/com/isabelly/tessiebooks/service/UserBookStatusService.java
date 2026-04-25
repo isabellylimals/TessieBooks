@@ -25,29 +25,30 @@ public class UserBookStatusService {
 
     public UserBookStatus updateStatus(User user, Long bookId, ReadingStatus status) {
 
-        Book book = bookRepo.findById(bookId)
-                .orElseThrow(() -> new RuntimeException("Livro não encontrado"));
+    Book book = bookRepo.findById(bookId)
+            .orElseThrow(() -> new RuntimeException("Livro não encontrado"));
 
-        UserBookStatus s = repo.findByUserIdAndBookId(user.getId(), bookId);
-
-        if (s == null) {
-            s = new UserBookStatus();
-            s.setUser(user);
-            s.setBook(book);
-        }
-
-        s.setStatus(status);
-
-        if (status == ReadingStatus.LENDO) {
-            s.setStartDate(LocalDate.now());
-        }
-
-        if (status == ReadingStatus.LIDO) {
-            s.setFinishDate(LocalDate.now());
-        }
-
-        return repo.save(s);
+    UserBookStatus s = repo.findByUserIdAndBookId(user.getId(), bookId)
+            .orElse(null);
+    
+    if (s == null) {
+        s = new UserBookStatus();
+        s.setUser(user);
+        s.setBook(book);
     }
+
+    s.setStatus(status);
+
+    if (status == ReadingStatus.LENDO) {
+        s.setStartDate(LocalDate.now());
+    }
+
+    if (status == ReadingStatus.LIDO) {
+        s.setFinishDate(LocalDate.now());
+    }
+
+    return repo.save(s);
+}
 
     public List<UserBookStatus> getLibrary(Long userId) {
         return repo.findByUserId(userId);
