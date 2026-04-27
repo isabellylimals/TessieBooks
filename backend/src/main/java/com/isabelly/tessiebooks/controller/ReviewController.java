@@ -1,5 +1,7 @@
 package com.isabelly.tessiebooks.controller;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,72 +13,138 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.isabelly.tessiebooks.entity.Book;
 import com.isabelly.tessiebooks.entity.Review;
 import com.isabelly.tessiebooks.entity.User;
+import com.isabelly.tessiebooks.repository.BookRepository;
+import com.isabelly.tessiebooks.repository.ReviewRepository;
 import com.isabelly.tessiebooks.service.ReviewService;
+import com.isabelly.tessiebooks.service.UploadService;
 
 @RestController
 @RequestMapping("/reviews")
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final BookRepository bookRepository;
+    private final ReviewRepository reviewRepository;
+    private final UploadService uploadService;
 
-    public ReviewController(ReviewService reviewService) {
+    public ReviewController(ReviewService reviewService, BookRepository bookRepository, ReviewRepository reviewRepository, UploadService uploadService) {
         this.reviewService = reviewService;
+        this.bookRepository = bookRepository;
+        this.reviewRepository = reviewRepository;
+        this.uploadService = uploadService;
     }
 
     // GET /reviews - retorna todas as reviews
     @GetMapping
     public ResponseEntity<?> getAllReviews() {
-        List<Review> reviews = reviewService.getAllReviews();
-        return ResponseEntity.ok(reviews);
+        try {
+            List<Review> reviews = reviewService.getAllReviews();
+            List<Map<String, Object>> response = new ArrayList<>();
+            
+            for (Review review : reviews) {
+                Map<String, Object> reviewMap = new HashMap<>();
+                reviewMap.put("id", review.getId());
+                reviewMap.put("title", review.getTitle());
+                reviewMap.put("comment", review.getComment());
+                reviewMap.put("rating", review.getRating());
+                reviewMap.put("createdAt", review.getCreatedAt());
+                reviewMap.put("imageUrl", review.getImageUrl());
+                reviewMap.put("likes", review.getLikes() != null ? review.getLikes().size() : 0);
+                
+                if (review.getUser() != null) {
+                    Map<String, Object> userMap = new HashMap<>();
+                    userMap.put("id", review.getUser().getId());
+                    userMap.put("name", review.getUser().getName());
+                    userMap.put("profileImage", review.getUser().getProfileImage());
+                    reviewMap.put("user", userMap);
+                }
+                
+                if (review.getBook() != null) {
+                    Map<String, Object> bookMap = new HashMap<>();
+                    bookMap.put("id", review.getBook().getId());
+                    bookMap.put("title", review.getBook().getTitle());
+                    bookMap.put("author", review.getBook().getAuthor());
+                    reviewMap.put("book", bookMap);
+                }
+                
+                response.add(reviewMap);
+            }
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Erro: " + e.getMessage());
+        }
     }
 
-    // GET /reviews/user/{userId} - retorna reviews de um usuário
+    // GET /reviews/user/{userId}
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getUserReviews(@PathVariable Long userId) {
         List<Review> reviews = reviewService.getUserReviews(userId);
         return ResponseEntity.ok(reviews);
     }
 
-    // GET /reviews/book/{bookId} - retorna reviews de um livro
+    // GET /reviews/book/{bookId}
     @GetMapping("/book/{bookId}")
     public ResponseEntity<?> getBookReviews(@PathVariable Long bookId) {
         List<Review> reviews = reviewService.getBookReviews(bookId);
         return ResponseEntity.ok(reviews);
     }
 
-    // POST /reviews - criar uma nova review
+    // POST /reviews
     @PostMapping
-    public ResponseEntity<?> createReview(Authentication auth, @RequestBody Map<String, Object> req) {
-        User user = (User) auth.getPrincipal();
-
-        Long bookId = ((Number) req.get("bookId")).longValue();
-        String title = (String) req.get("title");
-        String text = (String) req.get("text");
-        Integer rating = (Integer) req.getOrDefault("rating", 5);
-        String imageUrl = (String) req.get("imageUrl"); // nova foto
-
-        if (text == null || text.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Comentário não pode estar vazio");
-        }
-
-        Review review;
-        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
-            review = reviewService.createReviewWithImage(user, bookId, title, text, rating, imageUrl);
-        } else {
-            review = reviewService.createReview(user, bookId, title, text, rating);
-        }
-        return ResponseEntity.ok(review);
+public ResponseEntity<?> createReview(Authentication auth, 
+                                      @RequestParam("bookId") Long bookId,
+                                      @RequestParam("title") String title,
+                                      @RequestParam("text") String text,
+                                      @RequestParam(value = "rating", defaultValue = "5") Integer rating,
+                                      @RequestParam(value = "image", required = false) MultipartFile image) {
+    
+    if (auth == null || auth.getPrincipal() == null) {
+        return ResponseEntity.status(401).body("Você precisa estar logado");
     }
-
-    // DELETE /reviews/{id} - deletar uma review
+    
+    try {
+        User user = (User) auth.getPrincipal();
+        
+        String imageUrl = null;
+        if (image != null && !image.isEmpty()) {
+            imageUrl = uploadService.saveFile(image);
+        }
+        
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new RuntimeException("Livro não encontrado"));
+        
+        Review review = new Review();
+        review.setUser(user);
+        review.setBook(book);
+        review.setTitle(title);
+        review.setComment(text);
+        review.setRating(rating);
+        review.setImageUrl(imageUrl);
+        review.setCreatedAt(java.time.LocalDateTime.now());
+        review.setLikes(new ArrayList<>());
+        
+        Review saved = reviewRepository.save(review);
+        
+        return ResponseEntity.ok(saved);
+        
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(500).body("Erro ao criar resenha: " + e.getMessage());
+    }
+}
+    // DELETE /reviews/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteReview(@PathVariable Long id, Authentication auth) {
         User user = (User) auth.getPrincipal();
-
         try {
             reviewService.deleteReview(id, user);
             return ResponseEntity.ok("Review deletada com sucesso");
@@ -85,14 +153,49 @@ public class ReviewController {
         }
     }
 
-    // POST /reviews/{id}/like - dar like em uma review
+    // POST /reviews/{id}/like
     @PostMapping("/{id}/like")
     public ResponseEntity<?> likeReview(@PathVariable Long id, Authentication auth) {
         User user = (User) auth.getPrincipal();
-
         try {
             Review review = reviewService.likeReview(id, user);
-            return ResponseEntity.ok(review);
+            Map<String, Object> response = new HashMap<>();
+            response.put("likes", review.getLikes().size());
+            response.put("liked", review.getLikes().contains(user));
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
+    // GET /reviews/{id}/has-liked
+    @GetMapping("/{id}/has-liked")
+    public ResponseEntity<?> hasUserLiked(@PathVariable Long id, Authentication auth) {
+        User user = (User) auth.getPrincipal();
+        try {
+            boolean hasLiked = reviewService.hasUserLiked(id, user.getId());
+            Map<String, Object> response = new HashMap<>();
+            response.put("liked", hasLiked);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
+    // GET /reviews/{id}/likes
+    @GetMapping("/{id}/likes")
+    public ResponseEntity<?> getReviewLikes(@PathVariable Long id) {
+        try {
+            List<User> likes = reviewService.getReviewLikes(id);
+            List<Map<String, Object>> response = new ArrayList<>();
+            for (User user : likes) {
+                Map<String, Object> userMap = new HashMap<>();
+                userMap.put("id", user.getId());
+                userMap.put("name", user.getName());
+                userMap.put("profileImage", user.getProfileImage());
+                response.add(userMap);
+            }
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }

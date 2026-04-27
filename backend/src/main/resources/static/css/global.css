@@ -1,0 +1,192 @@
+/* ============================================
+   VARIÁVEIS GLOBAIS E RESET
+============================================ */
+:root {
+  --bg-main: #0e0b10;
+  --bg-card: rgba(24, 17, 20, 0.92);
+  --bg-card-alt: rgba(16, 12, 15, 0.95);
+  --border-soft: #3b2e25;
+  --accent: #b89c6c;
+  --accent-soft: #d6c8b0;
+  --danger: #b25a5a;
+  --text-main: #f1e6d8;
+  --text-muted: #c2b6a5;
+  --shadow: rgba(0, 0, 0, 0.5);
+}
+/* SOLUÇÃO MILAGROSA - Coloque no TOPO do global.css */
+#app-section {
+  display: none !important;
+}
+
+#login-section {
+  display: block !important;
+}
+
+body.app-active #app-section {
+  display: block !important;
+}
+
+body.app-active #login-section {
+  display: none !important;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-family: "Cormorant Garamond", serif;
+  min-height: 100vh;
+}
+
+.page-bg {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at top, #241926, #050308);
+  opacity: 0.3;
+  z-index: -1;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+/* Garantir que o app comece escondido */
+#app-section {
+  display: none;
+}
+
+#app-section.hidden {
+  display: none;
+}
+
+#app-section:not(.hidden) {
+  display: block;
+}
+
+/* Garantir que as seções de login/cadastro comecem corretamente */
+#login-section:not(.hidden) {
+  display: block;
+}
+
+#login-section.hidden,
+#register-section.hidden {
+  display: none;
+}/* Botão primário */
+.primary-btn {
+  background: linear-gradient(135deg, #b89c6c, #d6c8b0);
+  color: #0e0b10;
+  padding: 10px 20px;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(184, 156, 108, 0.3);
+}
+
+/* Seções do app */
+.app-section-content {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.section-header {
+  margin-bottom: 24px;
+}
+
+.subsection-title {
+  font-family: "Cinzel", serif;
+  font-size: 1.3rem;
+  color: var(--accent-soft);
+  margin: 24px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(184, 156, 108, 0.3);
+}
+
+.tabs-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(184, 156, 108, 0.3);
+  padding-bottom: 8px;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 8px 20px;
+  cursor: pointer;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  background: rgba(184, 156, 108, 0.2);
+  color: var(--accent);
+}
+
+.search-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.search-container .input {
+  flex: 1;
+}
+
+.create-post {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.info-icon {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+/* FORÇAR o app a ficar escondido INICIALMENTE */
+#app-section {
+  display: none !important;
+}
+
+/* Só mostrar quando tiver a classe visible OU body tiver app-active */
+#app-section.visible,
+body.app-active #app-section {
+  display: block !important;
+}
+
+/* Garantir que login fique visível inicialmente */
+#login-section {
+  display: block !important;
+}
+
+#register-section {
+  display: none !important;
+}
+
+/* Quando body tiver app-active, esconder login */
+body.app-active #login-section,
+body.app-active #register-section {
+  display: none !important;
+}

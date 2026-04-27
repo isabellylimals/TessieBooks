@@ -3,7 +3,6 @@ com\isabelly\tessiebooks\repository\BookRepository.class
 com\isabelly\tessiebooks\config\JwtService.class
 com\isabelly\tessiebooks\entity\Post.class
 com\isabelly\tessiebooks\entity\Review.class
-com\isabelly\tessiebooks\controller\SearchController$1.class
 com\isabelly\tessiebooks\dto\book\BookRequest.class
 com\isabelly\tessiebooks\service\LibraryService.class
 com\isabelly\tessiebooks\entity\User.class

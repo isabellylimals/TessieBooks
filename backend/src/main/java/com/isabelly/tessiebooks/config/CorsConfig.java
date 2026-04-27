@@ -18,9 +18,8 @@ public class CorsConfig {
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                         .allowedHeaders("*")
                         .exposedHeaders("*")
-                        .allowCredentials(false);
+                        .allowCredentials(true);  // ← MUDAR PARA true
             }
         };
     }
 }
-

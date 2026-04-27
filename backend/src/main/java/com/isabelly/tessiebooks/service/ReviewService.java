@@ -63,14 +63,36 @@ public class ReviewService {
         return review;
     }
 
-    public Review likeReview(Long reviewId, User user) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review não encontrada"));
 
-        if (!review.getLikes().contains(user)) {
-            review.getLikes().add(user);
-        }
+// Contar quantos likes
+public int getLikesCount(Long reviewId) {
+    Review review = reviewRepository.findById(reviewId)
+            .orElseThrow(() -> new RuntimeException("Resenha não encontrada"));
+    return review.getLikes().size();
+}
 
-        return reviewRepository.save(review);
+// Verificar se usuário já curtiu
+public boolean hasUserLiked(Long reviewId, Long userId) {
+    Review review = reviewRepository.findById(reviewId)
+            .orElseThrow(() -> new RuntimeException("Resenha não encontrada"));
+    return review.getLikes().stream().anyMatch(u -> u.getId().equals(userId));
+}
+public List<User> getReviewLikes(Long reviewId) {
+    Review review = reviewRepository.findById(reviewId)
+            .orElseThrow(() -> new RuntimeException("Resenha não encontrada"));
+    return review.getLikes();
+}
+
+public Review likeReview(Long reviewId, User user) {
+    Review review = reviewRepository.findById(reviewId)
+            .orElseThrow(() -> new RuntimeException("Resenha não encontrada"));
+    
+    if (review.getLikes().contains(user)) {
+        review.getLikes().remove(user);
+    } else {
+        review.getLikes().add(user);
     }
+    
+    return reviewRepository.save(review);
+}
 }

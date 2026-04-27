@@ -1,0 +1,32 @@
+/* Estilo do Feed */
+.feed-card {
+  background: linear-gradient(135deg, rgba(184, 156, 108, 0.08), rgba(107, 69, 51, 0.08));
+  border-left: 3px solid var(--accent);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+
+.feed-card:hover {
+  background: linear-gradient(135deg, rgba(184, 156, 108, 0.15), rgba(107, 69, 51, 0.15));
+  transform: translateY(-2px);
+}
+
+.create-post {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.create-post textarea {
+  width: 100%;
+  background: rgba(28, 21, 23, 0.9);
+  border: 1px solid #3e2f25;
+  border-radius: 12px;
+  padding: 12px;
+  color: var(--text-main);
+  font-family: inherit;
+  resize: vertical;
+}

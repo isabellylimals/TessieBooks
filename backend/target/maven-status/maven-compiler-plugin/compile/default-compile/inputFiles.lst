@@ -14,7 +14,9 @@ C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\dto\ApiResponse.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\dto\auth\LoginRequest.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\dto\auth\LoginResponse.java
+C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\dto\auth\NotBlank.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\dto\auth\RegisterRequest.java
+C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\dto\auth\Size.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\dto\book\BookRequest.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\dto\book\BookResponse.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\dto\feed\FeedItem.java

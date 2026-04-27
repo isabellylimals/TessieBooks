@@ -33,14 +33,16 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable());
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
+        // PERMITIR OPTIONS para todas as rotas (preflight)
         http.authorizeHttpRequests(auth -> auth
-        .requestMatchers("/auth/**").permitAll()
-        .requestMatchers("/books/**").permitAll()
-        .requestMatchers("/users/**").authenticated()
-        .requestMatchers("/reviews/**").authenticated()
-        .requestMatchers("/feed/**").authenticated()
-        .anyRequest().permitAll()
-);
+            .requestMatchers("/auth/**").permitAll()
+            .requestMatchers("/books/**").permitAll()
+            .requestMatchers("/reviews/**").permitAll()  // TEMPORÁRIO PARA TESTE
+            .requestMatchers("/feed/**").permitAll()     // TEMPORÁRIO PARA TESTE
+            .requestMatchers("/users/**").permitAll()    // TEMPORÁRIO PARA TESTE
+            .anyRequest().permitAll()                    // TEMPORÁRIO - DEPOIS VOLTA
+        );
+        
         http.sessionManagement(sm ->
                 sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         );
@@ -50,28 +52,23 @@ public class SecurityConfig {
         return http.build();
     }
 
-   @Bean
-public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
-    
-    configuration.setAllowedOrigins(Arrays.asList(
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:8080"
-    ));
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // Adicionar localhost e também permitir qualquer origem para teste
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
-    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-    configuration.setAllowedHeaders(Arrays.asList("*"));
-    configuration.setExposedHeaders(Arrays.asList("*"));
-    configuration.setAllowCredentials(false);
-    configuration.setMaxAge(3600L);
-
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
-    return source;
-}
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

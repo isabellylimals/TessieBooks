@@ -1,6 +1,7 @@
 package com.isabelly.tessiebooks.service;
 
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
@@ -59,6 +60,18 @@ public User updateProfile(Long id, Map<String, String> updates) {
     }
     
     return userRepository.save(user);
+}
+
+// Buscar seguidores de um usuário
+public List<User> getFollowers(Long userId) {
+    User user = getById(userId);
+    return user.getFollowers();
+}
+
+// Buscar quem um usuário segue
+public List<User> getFollowing(Long userId) {
+    User user = getById(userId);
+    return user.getFollowing();
 }
 
 }

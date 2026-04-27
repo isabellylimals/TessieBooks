@@ -1,0 +1,88 @@
+/* ============================================
+   RESPONSIVIDADE
+============================================ */
+/* CELULAR */
+@media (max-width: 768px) {
+  #app-section {
+    padding: 12px;
+  }
+
+  .app-title {
+    font-size: 1.4rem;
+  }
+
+  .top-nav {
+    gap: 5px;
+    border-radius: 30px;
+    padding: 8px;
+  }
+
+  .nav-btn {
+    padding: 6px 12px;
+    font-size: 0.7rem;
+  }
+
+  .section-title {
+    font-size: 1.3rem;
+  }
+
+  .list-container {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .profile-stats-modern {
+    gap: 15px;
+  }
+
+  .stat-number {
+    font-size: 1.2rem;
+  }
+
+  .profile-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .star {
+    font-size: 1.5rem;
+  }
+}
+
+/* TABLET */
+@media (min-width: 769px) and (max-width: 1024px) {
+  #app-section {
+    padding: 16px 24px;
+  }
+
+  .list-container {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 2fr));
+    gap: 16px;
+  }
+}
+
+/* TELAS GRANDES */
+@media (min-width: 1400px) {
+  #app-section {
+    max-width: 1600px;
+    padding: 30px 50px;
+  }
+
+  .list-container {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 28px;
+  }
+
+  .app-title {
+    font-size: 2rem;
+  }
+
+  .nav-btn {
+    padding: 12px 32px;
+    font-size: 1rem;
+  }
+}

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.isabelly.tessiebooks.entity.ReadingStatus;
 import com.isabelly.tessiebooks.entity.User;
 import com.isabelly.tessiebooks.entity.UserBookStatus;
+import com.isabelly.tessiebooks.repository.UserBookStatusRepository;
 import com.isabelly.tessiebooks.service.AuthService;
 import com.isabelly.tessiebooks.service.LibraryService;
 import com.isabelly.tessiebooks.service.UserService;
@@ -30,11 +31,13 @@ public class LibraryController {
     private final LibraryService libraryService;
     private final AuthService authService;
     private final UserService userService;
+    private final UserBookStatusRepository userBookStatusRepository;
 
-    public LibraryController(LibraryService libraryService, AuthService authService, UserService userService) {
+    public LibraryController(LibraryService libraryService, AuthService authService, UserService userService, UserBookStatusRepository userBookStatusRepository) {
         this.libraryService = libraryService;
         this.authService = authService;
         this.userService = userService;
+        this.userBookStatusRepository = userBookStatusRepository;
     }
 
     // Define/atualiza status de um livro na minha biblioteca
@@ -94,6 +97,15 @@ public ResponseEntity<?> updateProgress(
     );
     
     return ResponseEntity.ok(updated);
+}
+@GetMapping("/me/read-books")
+public ResponseEntity<?> getReadBooks(HttpServletRequest req) {
+    User me = authService.getAuthenticatedUser(req);
+    
+    List<UserBookStatus> readBooks = userBookStatusRepository
+            .findByUserIdAndStatus(me.getId(), ReadingStatus.LIDO);
+    
+    return ResponseEntity.ok(readBooks);
 }
 
 }

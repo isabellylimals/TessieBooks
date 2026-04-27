@@ -1,0 +1,45 @@
+/* Estilo da Comunidade */
+.user-card {
+  background: linear-gradient(135deg, rgba(155, 126, 189, 0.1), rgba(107, 69, 51, 0.1));
+  border: 1px solid #9b7ebd;
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.user-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+}
+
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.user-name {
+  font-size: 1.2rem;
+  color: var(--accent-soft);
+  margin: 0;
+}
+
+.user-bio {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 8px 0;
+  font-style: italic;
+}
+
+.search-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search-container .input {
+  flex: 1;
+}

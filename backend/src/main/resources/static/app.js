@@ -651,40 +651,56 @@ async function buscarUsuarios() {
 
 // Seguir / deixar de seguir (expostos globalmente via onclick)
 window.followUser = async function(userId) {
-  if (!authToken) return;
-  try {
-    await apiFollowUser(authToken, userId);
-    // Atualiza estado local e botão
-    if (!Array.isArray(myFollowing)) myFollowing = [];
-    if (!myFollowing.find(u => (u.id || u) === userId)) myFollowing.push({ id: userId });
-    const btn = document.getElementById(`follow-btn-${userId}`);
-    if (btn) {
-      btn.textContent = 'Seguindo';
-      btn.onclick = () => window.unfollowUser(userId);
+    if (!authToken) return;
+    
+    // Não pode seguir a si mesmo
+    const currentUser = await apiGetProfile(authToken);
+    if (currentUser.id === userId) {
+        alert("Você não pode seguir a si mesmo");
+        return;
     }
-  } catch (err) {
-    console.error(err);
-    alert('Erro ao seguir usuário');
-  }
+    
+    try {
+        await apiFollowUser(authToken, userId);
+        
+        // Atualizar estado local
+        if (!Array.isArray(myFollowing)) myFollowing = [];
+        myFollowing.push(userId);
+        
+        // Atualizar botão
+        const btn = document.getElementById(`follow-btn-${userId}`);
+        if (btn) {
+            btn.textContent = 'Seguindo';
+            btn.onclick = () => window.unfollowUser(userId);
+        }
+        
+    } catch (err) {
+        console.error(err);
+        alert(err.message || 'Erro ao seguir usuário');
+    }
 }
 
 window.unfollowUser = async function(userId) {
-  if (!authToken) return;
-  try {
-    await apiUnfollowUser(authToken, userId);
-    // Atualiza estado local e botão
-    if (Array.isArray(myFollowing)) myFollowing = myFollowing.filter(u => (u.id || u) !== userId);
-    const btn = document.getElementById(`follow-btn-${userId}`);
-    if (btn) {
-      btn.textContent = 'Seguir';
-      btn.onclick = () => window.followUser(userId);
+    if (!authToken) return;
+    
+    try {
+        await apiUnfollowUser(authToken, userId);
+        
+        // Atualizar estado local
+        myFollowing = myFollowing.filter(id => id !== userId);
+        
+        // Atualizar botão
+        const btn = document.getElementById(`follow-btn-${userId}`);
+        if (btn) {
+            btn.textContent = 'Seguir';
+            btn.onclick = () => window.followUser(userId);
+        }
+        
+    } catch (err) {
+        console.error(err);
+        alert(err.message || 'Erro ao deixar de seguir');
     }
-  } catch (err) {
-    console.error(err);
-    alert('Erro ao deixar de seguir usuário');
-  }
 }
-
 async function verPerfil(userId) {
   if (!authToken) return;
   if (!profileContent) return;
@@ -874,49 +890,159 @@ async function carregarResenhas() {
 }
 
 // ---------- Perfil ----------
+// Variáveis globais
+let currentModalType = null;
+
+// Carregar perfil completo
 async function carregarPerfil() {
-  if (!authToken) return;
-  profileContent.innerHTML = "<p>Carregando perfil...</p>";
-
-  try {
-    const profile = await apiGetProfile(authToken);
-    const reviews = await apiGetReviews(authToken);
-
-    const nome = profile.name || profile.nome || "Leitor sem nome";
-    const email = profile.email || "Email não informado";
-    const bio = profile.bio || "Um apreciador de páginas amareladas e noites chuvosas.";
-
-    const livrosLidos = profile.readCount || profile.livrosLidos || 0;
-    const reviewsCount = reviews.length;
-
-    profileContent.innerHTML = `
-      <div class="profile-header">
-        <h2>${nome}</h2>
-        <p class="profile-bio">${bio}</p>
-      </div>
-      <div class="profile-field">
-        <span class="profile-label">📧 Email: </span>${email}
-      </div>
-      <div class="divider"></div>
-      <div class="profile-stats">
-        <div class="stat">
-          <span class="stat-number">${livrosLidos}</span>
-          <span class="stat-label">Livros Lidos</span>
-        </div>
-        <div class="stat">
-          <span class="stat-number">${reviewsCount}</span>
-          <span class="stat-label">Resenhas</span>
-        </div>
-      </div>
-    `;
-    // Atualiza lista de seguimentos local para marcação de botões
-    myFollowing = profile.following || [];
-  } catch (err) {
-    console.error(err);
-    profileContent.innerHTML = "<p class='error'>Erro ao carregar perfil do leitor.</p>";
-  }
+    if (!authToken) return;
+    
+    try {
+        const profile = await apiGetProfile(authToken);
+        const stats = await apiGetUserStats(authToken);
+        
+        // Preencher dados
+        document.getElementById('profile-name').textContent = profile.name;
+        document.getElementById('profile-bio').textContent = profile.bio || "Um apreciador de histórias...";
+        document.getElementById('profile-email').textContent = profile.email;
+        document.getElementById('profile-join-date').textContent = formatDate(profile.joinDate);
+        
+        // Avatar
+        if (profile.profileImage) {
+            document.getElementById('profile-avatar').src = profile.profileImage;
+        }
+        
+        // Estatísticas
+        document.getElementById('followers-count').textContent = stats.followers || 0;
+        document.getElementById('following-count').textContent = stats.following || 0;
+        document.getElementById('books-read-count').textContent = stats.booksRead || 0;
+        document.getElementById('pages-read-count').textContent = stats.pagesRead || 0;
+        
+        // Carregar resenhas do usuário
+        await showUserReviews();
+        
+    } catch (err) {
+        console.error('Erro ao carregar perfil:', err);
+    }
 }
 
+// Trocar foto de perfil
+document.getElementById('change-avatar-btn')?.addEventListener('click', () => {
+    document.getElementById('avatar-upload').click();
+});
+
+document.getElementById('avatar-upload')?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Converter para Base64
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        const imageUrl = event.target.result;
+        
+        try {
+            await apiUpdateProfileImage(authToken, imageUrl);
+            document.getElementById('profile-avatar').src = imageUrl;
+            alert('Foto atualizada com sucesso!');
+        } catch (err) {
+            alert('Erro ao atualizar foto');
+        }
+    };
+    reader.readAsDataURL(file);
+});
+
+// Mostrar seguidores
+async function showFollowers() {
+    currentModalType = 'followers';
+    document.getElementById('modal-title').textContent = 'Seguidores';
+    
+    try {
+        const profile = await apiGetProfile(authToken);
+        const followers = await apiGetFollowers(authToken, profile.id);
+        
+        const modalList = document.getElementById('modal-list');
+        modalList.innerHTML = followers.map(user => `
+            <div class="modal-user-item" onclick="verPerfil(${user.id})">
+                <img src="${user.profileImage || 'default-avatar.svg'}" class="modal-user-avatar">
+                <div>
+                    <strong>${user.name}</strong>
+                    <p style="font-size: 0.8rem; margin: 0;">${user.bio || ''}</p>
+                </div>
+            </div>
+        `).join('');
+        
+        document.getElementById('followers-modal').classList.remove('hidden');
+    } catch (err) {
+        alert('Erro ao carregar seguidores');
+    }
+}
+
+// Mostrar seguindo
+async function showFollowing() {
+    currentModalType = 'following';
+    document.getElementById('modal-title').textContent = 'Seguindo';
+    
+    try {
+        const profile = await apiGetProfile(authToken);
+        const following = await apiGetFollowing(authToken, profile.id);
+        
+        const modalList = document.getElementById('modal-list');
+        modalList.innerHTML = following.map(user => `
+            <div class="modal-user-item" onclick="verPerfil(${user.id})">
+                <img src="${user.profileImage || 'default-avatar.svg'}" class="modal-user-avatar">
+                <div>
+                    <strong>${user.name}</strong>
+                    <p style="font-size: 0.8rem; margin: 0;">${user.bio || ''}</p>
+                </div>
+            </div>
+        `).join('');
+        
+        document.getElementById('followers-modal').classList.remove('hidden');
+    } catch (err) {
+        alert('Erro ao carregar seguindo');
+    }
+}
+
+// Fechar modal
+function closeModal() {
+    document.getElementById('followers-modal').classList.add('hidden');
+}
+
+// Mostrar resenhas do usuário
+async function showUserReviews() {
+    try {
+        const profile = await apiGetProfile(authToken);
+        const reviews = await apiGetUserReviews(authToken, profile.id);
+        
+        const container = document.getElementById('profile-content');
+        container.innerHTML = reviews.map(review => `
+            <div class="review-card">
+                <h4>${review.title}</h4>
+                <div class="review-rating">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</div>
+                <p>${review.comment || review.text}</p>
+                <em>Sobre: ${review.book?.title || 'Livro'}</em>
+            </div>
+        `).join('');
+        
+        if (reviews.length === 0) {
+            container.innerHTML = '<p class="info">Você ainda não escreveu nenhuma resenha.</p>';
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'Recentemente';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+}
+
+// Expor funções globais
+window.showFollowers = showFollowers;
+window.showFollowing = showFollowing;
+window.closeModal = closeModal;
+window.showUserReviews = showUserReviews;
 // ---------- Service Worker ----------
 function registrarServiceWorker() {
   if ("serviceWorker" in navigator) {
