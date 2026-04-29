@@ -10,11 +10,12 @@ import jakarta.persistence.Table;
 public class Book {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+private Integer pages;
     private String title;
     private String author;
     private String coverImageUrl; // opcional, capa
     private String description;
+    private Integer publicationYear; 
 
  private String genre; // dark academia, vitoriano etc
 
@@ -31,9 +32,14 @@ public class Book {
         this.id = id;
         this.title = title;
     }
-
+private String keywords; 
     // getters/setters
-
+ public Integer getPages() {
+        return pages;
+    }
+    public void setPages(Integer pages) {
+        this.pages = pages;
+    }
     public Long getId() {
         return id;
     }
@@ -81,4 +87,22 @@ public String getGenre() {
     return genre;
 
 }
+  public String getKeywords() {
+        return keywords;
+    }
+
+    public void setKeywords(String keywords) {
+        this.keywords = keywords;
+    }
+    public Integer getPublicationYear() {
+        return publicationYear;
+    }
+
+    public void setPublicationYear(Integer publicationYear) {
+        this.publicationYear = publicationYear;
+    }
+
+    public String getCoverUrl() {
+        return coverImageUrl;
+    }
 }

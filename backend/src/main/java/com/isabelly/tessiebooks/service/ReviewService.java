@@ -64,14 +64,13 @@ public class ReviewService {
     }
 
 
-// Contar quantos likes
 public int getLikesCount(Long reviewId) {
     Review review = reviewRepository.findById(reviewId)
             .orElseThrow(() -> new RuntimeException("Resenha não encontrada"));
     return review.getLikes().size();
 }
 
-// Verificar se usuário já curtiu
+
 public boolean hasUserLiked(Long reviewId, Long userId) {
     Review review = reviewRepository.findById(reviewId)
             .orElseThrow(() -> new RuntimeException("Resenha não encontrada"));

@@ -9,7 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
+ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -52,6 +52,9 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+   
+
+    @Column(unique = true)
     private String name;
     
     @JsonIgnore
@@ -68,7 +71,13 @@ public class User implements UserDetails {
     private LocalDate joinDate;
     private String location;
     private String favoriteGenre;
-
+@ManyToMany
+@JoinTable(
+    name = "user_favorites",
+    joinColumns = @JoinColumn(name = "user_id"),
+    inverseJoinColumns = @JoinColumn(name = "book_id")
+)
+private List<Book> favoriteBooks = new ArrayList<>();
 
     @ManyToMany
     @JsonIgnore
@@ -100,7 +109,7 @@ protected void onCreate() {
             following.add(user);
         }
     }
-// ✅ Correto - retorna List<User>
+
 public List<User> getFollowers() {
     return followers;
 }
@@ -108,8 +117,6 @@ public List<User> getFollowers() {
 public List<User> getFollowing() {
     return following;
 }
-
-// ✅ Se quiser a quantidade, crie métodos separados:
 
     public void unfollow(User user) {
         following.remove(user);
@@ -133,8 +140,9 @@ public List<User> getFollowing() {
     }
 
 
+public List<Book> getFavoriteBooks() { return favoriteBooks; }
+public void setFavoriteBooks(List<Book> favoriteBooks) { this.favoriteBooks = favoriteBooks; }
 
-// Getters e Setters
 public Integer getTotalBooksRead() { return totalBooksRead; }
 public void setTotalBooksRead(Integer totalBooksRead) { this.totalBooksRead = totalBooksRead; }
 

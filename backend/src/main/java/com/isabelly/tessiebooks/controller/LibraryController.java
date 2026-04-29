@@ -40,7 +40,7 @@ public class LibraryController {
         this.userBookStatusRepository = userBookStatusRepository;
     }
 
-    // Define/atualiza status de um livro na minha biblioteca
+   
     @PostMapping("/books/{bookId}/status")
     public ResponseEntity<?> setStatus(
             @PathVariable Long bookId,
@@ -60,7 +60,6 @@ public class LibraryController {
         return ResponseEntity.ok(ub);
     }
 
-    // Minha biblioteca completa
   @GetMapping("/me")
 public ResponseEntity<?> myLibrary(
         @RequestParam(required = false) String status,
@@ -87,13 +86,26 @@ public ResponseEntity<?> updateProgress(
 ) {
     User me = authService.getAuthenticatedUser(req);
     
-    // Aqui chamaremos o service para salvar
+    Integer paginasLidas = null;
+    Integer paginasTotais = null;
+    Boolean favorito = null;
+    
+    if (progressData.containsKey("paginasLidas") && progressData.get("paginasLidas") != null) {
+        paginasLidas = (Integer) progressData.get("paginasLidas");
+    }
+    if (progressData.containsKey("paginasTotais") && progressData.get("paginasTotais") != null) {
+        paginasTotais = (Integer) progressData.get("paginasTotais");
+    }
+    if (progressData.containsKey("favorito") && progressData.get("favorito") != null) {
+        favorito = (Boolean) progressData.get("favorito");
+    }
+    
     UserBookStatus updated = libraryService.updateReadProgress(
         me, 
         bookId, 
-        (Integer) progressData.get("paginasLidas"),
-        (Integer) progressData.get("paginasTotais"),
-        (Boolean) progressData.get("favorito")
+        paginasLidas,
+        paginasTotais,
+        favorito
     );
     
     return ResponseEntity.ok(updated);

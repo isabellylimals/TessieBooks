@@ -34,7 +34,7 @@ public class FeedController {
         return ResponseEntity.ok(posts);
     }
 
-    // POST /feed - criar um novo post
+   
     @PostMapping
     public ResponseEntity<?> createPost(Authentication auth, @RequestBody Map<String, String> req) {
         User user = (User) auth.getPrincipal();
@@ -48,7 +48,7 @@ public class FeedController {
         return ResponseEntity.ok(post);
     }
 
-    // DELETE /feed/{id} - deletar um post
+   
 @DeleteMapping("/{id}")
 public ResponseEntity<?> deletePost(@PathVariable Long id, Authentication auth) {
     User user = (User) auth.getPrincipal();

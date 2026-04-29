@@ -1,4 +1,4 @@
-package com.isabelly.tessiebooks.dto.book;
+﻿package com.isabelly.tessiebooks.dto.book;
 
 import lombok.Data;
 
@@ -9,4 +9,7 @@ public class BookRequest {
     private String description;
     private String genre;
     private String coverUrl;
+    private Integer publicationYear;
+    private Integer pages;
+    private String keywords;
 }

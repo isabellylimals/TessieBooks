@@ -1,7 +1,5 @@
-package com.isabelly.tessiebooks.service;
+﻿package com.isabelly.tessiebooks.service;
 
-import java.util.List;
-import org.springframework.stereotype.Service;
 import com.isabelly.tessiebooks.entity.Book;
 import com.isabelly.tessiebooks.entity.ReadingStatus;
 import com.isabelly.tessiebooks.entity.User;
@@ -9,16 +7,20 @@ import com.isabelly.tessiebooks.entity.UserBookStatus;
 import com.isabelly.tessiebooks.repository.BookRepository;
 import com.isabelly.tessiebooks.repository.UserBookStatusRepository;
 import com.isabelly.tessiebooks.repository.UserRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class LibraryService {
 
     private final UserBookStatusRepository userBookStatusRepository;
     private final BookRepository bookRepository;
-    private final UserRepository userRepository;  // ← precisa ter!
+    private final UserRepository userRepository;
 
     public LibraryService(UserBookStatusRepository userBookStatusRepository, 
-                          BookRepository bookRepository,
+                          BookRepository bookRepository, 
                           UserRepository userRepository) {
         this.userBookStatusRepository = userBookStatusRepository;
         this.bookRepository = bookRepository;
@@ -26,39 +28,27 @@ public class LibraryService {
     }
 
     public UserBookStatus setStatus(User user, Long bookId, ReadingStatus status) {
-
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Livro não encontrado"));
-
-        UserBookStatus ub = userBookStatusRepository.findByUserIdAndBookId(user.getId(), bookId)
-                .orElse(null);
         
-        if (ub == null) {
+        Optional<UserBookStatus> existing = userBookStatusRepository
+                .findByUserIdAndBookId(user.getId(), bookId);
+        
+        UserBookStatus ub;
+        
+        if (existing.isPresent()) {
+            ub = existing.get();
+            ub.setStatus(status);
+        } else {
             ub = new UserBookStatus();
             ub.setUser(user);
             ub.setBook(book);
-        }
-
-        ReadingStatus oldStatus = ub.getStatus();
-        ub.setStatus(status);
-        
-        // Garantir que não seja null
-        if (user.getTotalBooksRead() == null) user.setTotalBooksRead(0);
-        if (user.getTotalPagesRead() == null) user.setTotalPagesRead(0);
-        
-        if (status == ReadingStatus.LIDO && oldStatus != ReadingStatus.LIDO) {
-            user.setTotalBooksRead(user.getTotalBooksRead() + 1);
-            if (ub.getPaginasTotais() != null && ub.getPaginasTotais() > 0) {
-                user.setTotalPagesRead(user.getTotalPagesRead() + ub.getPaginasTotais());
+            ub.setStatus(status);
+            
+            // Se o livro tem páginas definidas, definir paginasTotais
+            if (book.getPages() != null && book.getPages() > 0) {
+                ub.setPaginasTotais(book.getPages());
             }
-            userRepository.save(user);
-        } 
-        else if (oldStatus == ReadingStatus.LIDO && status != ReadingStatus.LIDO) {
-            user.setTotalBooksRead(Math.max(0, user.getTotalBooksRead() - 1));
-            if (ub.getPaginasTotais() != null && ub.getPaginasTotais() > 0) {
-                user.setTotalPagesRead(Math.max(0, user.getTotalPagesRead() - ub.getPaginasTotais()));
-            }
-            userRepository.save(user);
         }
         
         return userBookStatusRepository.save(ub);
@@ -69,19 +59,40 @@ public class LibraryService {
     }
 
     public List<UserBookStatus> getLibraryByStatus(User user, ReadingStatus status) {
-        return userBookStatusRepository.findByUserId(user.getId()).stream()
-                .filter(ub -> ub.getStatus() == status)
-                .toList();
+        return userBookStatusRepository.findByUserIdAndStatus(user.getId(), status);
     }
 
     public UserBookStatus updateReadProgress(User user, Long bookId, Integer paginasLidas, Integer paginasTotais, Boolean favorito) {
-        UserBookStatus status = userBookStatusRepository.findByUserIdAndBookId(user.getId(), bookId)
-                .orElseThrow(() -> new RuntimeException("Livro não encontrado na sua biblioteca"));
-
-        status.setPaginasLidas(paginasLidas);
-        status.setPaginasTotais(paginasTotais);
-        if (favorito != null) status.setFavorito(favorito);
-
-        return userBookStatusRepository.save(status);
+    UserBookStatus ub = userBookStatusRepository
+            .findByUserIdAndBookId(user.getId(), bookId)
+            .orElseThrow(() -> new RuntimeException("Livro não encontrado na sua biblioteca"));
+    
+    if (paginasLidas != null) {
+        ub.setPaginasLidas(paginasLidas);
     }
+    if (paginasTotais != null && paginasTotais > 0) {
+        ub.setPaginasTotais(paginasTotais);
+    }
+    
+    // Se paginasTotais ainda for 0 ou null, tentar pegar do livro
+    if ((ub.getPaginasTotais() == null || ub.getPaginasTotais() == 0) && ub.getBook() != null && ub.getBook().getPages() != null) {
+        ub.setPaginasTotais(ub.getBook().getPages());
+    }
+    
+    if (favorito != null) {
+        ub.setFavorito(favorito);
+    }
+    
+    // Se o status é LIDO e não há data de término, definir
+    if (ub.getStatus() == ReadingStatus.LIDO && ub.getFinishDate() == null) {
+        ub.setFinishDate(java.time.LocalDate.now());
+    }
+    
+    // Se o status é LENDO e não há data de início, definir
+    if (ub.getStatus() == ReadingStatus.LENDO && ub.getStartDate() == null) {
+        ub.setStartDate(java.time.LocalDate.now());
+    }
+    
+    return userBookStatusRepository.save(ub);
+}
 }

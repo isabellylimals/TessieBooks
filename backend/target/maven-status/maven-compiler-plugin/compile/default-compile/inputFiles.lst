@@ -5,6 +5,7 @@ C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\controller\AuthController.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\controller\BookController.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\controller\FeedController.java
+C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\controller\FileController.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\controller\LibraryController.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\controller\ResetPasswordController.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\controller\ReviewController.java
@@ -37,6 +38,7 @@ C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\service\PostService.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\service\ReviewService.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\service\SearchService.java
+C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\service\UploadService.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\service\UserBookStatusService.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\service\UserService.java
 C:\Users\isal7\OneDrive\Documentos\Documentos faculdade\TessieBooks\backend\src\main\java\com\isabelly\tessiebooks\TessieBooksApplication.java

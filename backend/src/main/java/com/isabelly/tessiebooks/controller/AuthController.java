@@ -31,7 +31,7 @@ public class AuthController {
   @PostMapping("/register")
 public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
     
-    // ✅ Validações manuais
+   
     if (req.getName() == null || req.getName().trim().isEmpty()) {
         return ResponseEntity.badRequest().body(new ApiResponse("Nome é obrigatório", false));
     }
@@ -52,13 +52,14 @@ public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
         return ResponseEntity.badRequest().body(new ApiResponse("Senha deve ter no mínimo 6 caracteres", false));
     }
     
-    // Seu código original continua...
+   
+    if (userRepository.findByName(req.getName()).isPresent()) {
+        return ResponseEntity.badRequest().body(new ApiResponse("Nome de usuário já está em uso. Escolha outro.", false));
+    }
+    
+
     if (userRepository.findByEmail(req.getEmail()).isPresent()) {
         return ResponseEntity.badRequest().body(new ApiResponse("Email já registrado.", false));
-    }
-
-    if (req.getName() != null && userRepository.findByName(req.getName()).isPresent()) {
-        return ResponseEntity.badRequest().body(new ApiResponse("Nome de usuário já em uso.", false));
     }
 
     try {
@@ -74,7 +75,6 @@ public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
         return ResponseEntity.badRequest().body(new ApiResponse("Erro ao registrar: " + e.getMessage(), false));
     }
 }
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
 

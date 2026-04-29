@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,8 @@ import com.isabelly.tessiebooks.entity.User;
 import com.isabelly.tessiebooks.repository.ReviewRepository;
 import com.isabelly.tessiebooks.repository.UserRepository;
 import com.isabelly.tessiebooks.service.UserService;
+
+import jakarta.transaction.Transactional;
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -37,8 +40,9 @@ public class UserController {
     public ResponseEntity<?> listAll() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
-// ---- GET /users/me ----
+
 @GetMapping("/me")
+
 public ResponseEntity<?> getMe(Authentication auth) {
     // 1. Verificar autenticação
     if (auth == null || !(auth.getPrincipal() instanceof User)) {
@@ -114,17 +118,44 @@ public ResponseEntity<?> updateProfileImage(Authentication auth, @RequestBody Ma
 
     // ---- GET /users/{id} ----
     @GetMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> getProfile(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getById(id));
     }
 
-    // ---- PUT /users/me ----
-    @PutMapping("/me")
-    public ResponseEntity<?> updateProfile(Authentication auth, @RequestBody Map<String, String> updates) {
-        User me = (User) auth.getPrincipal();
-        User updated = userService.updateProfile(me.getId(), updates);
-        return ResponseEntity.ok(updated);
+ @PutMapping("/me")
+public ResponseEntity<?> updateProfile(Authentication auth, @RequestBody Map<String, String> updates) {
+    User me = (User) auth.getPrincipal();
+    
+    // Validar se o nome está sendo alterado e se já existe
+    if (updates.containsKey("name")) {
+        String newName = updates.get("name");
+        User existingUser = userRepository.findByName(newName).orElse(null);
+        
+        if (existingUser != null && !existingUser.getId().equals(me.getId())) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "message", "Este nome de usuário já está em uso. Escolha outro.",
+                "success", false
+            ));
+        }
     }
+    
+    // Validar se o email está sendo alterado e se já existe
+    if (updates.containsKey("email")) {
+        String newEmail = updates.get("email");
+        User existingUser = userRepository.findByEmail(newEmail).orElse(null);
+        
+        if (existingUser != null && !existingUser.getId().equals(me.getId())) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "message", "Este email já está cadastrado.",
+                "success", false
+            ));
+        }
+    }
+    
+    User updated = userService.updateProfile(me.getId(), updates);
+    return ResponseEntity.ok(updated);
+}
 // ---- GET /users/{id}/followers ----
 @GetMapping("/{id}/followers")
 public ResponseEntity<?> getFollowers(@PathVariable Long id) {
@@ -165,5 +196,39 @@ public ResponseEntity<?> getUserStats(Authentication auth) {
     stats.put("joinDate", freshUser.getJoinDate());
     
     return ResponseEntity.ok(stats);
+}
+
+
+// ---- Favoritos ----
+@PostMapping("/me/favorites/{bookId}")
+public ResponseEntity<?> addFavorite(@PathVariable Long bookId, Authentication auth) {
+    User user = (User) auth.getPrincipal();
+    userService.addFavorite(user.getId(), bookId);
+    return ResponseEntity.ok(Map.of("message", "Livro adicionado aos favoritos"));
+}
+
+@DeleteMapping("/me/favorites/{bookId}")
+public ResponseEntity<?> removeFavorite(@PathVariable Long bookId, Authentication auth) {
+    User user = (User) auth.getPrincipal();
+    userService.removeFavorite(user.getId(), bookId);
+    return ResponseEntity.ok(Map.of("message", "Livro removido dos favoritos"));
+}
+
+@GetMapping("/me/favorites")
+public ResponseEntity<?> getMyFavorites(Authentication auth) {
+    User user = (User) auth.getPrincipal();
+    return ResponseEntity.ok(userService.getUserFavorites(user.getId()));
+}
+
+@GetMapping("/{userId}/favorites")
+public ResponseEntity<?> getUserFavorites(@PathVariable Long userId) {
+    return ResponseEntity.ok(userService.getUserFavorites(userId));
+}
+
+@GetMapping("/me/favorites/{bookId}/check")
+public ResponseEntity<?> isFavorite(@PathVariable Long bookId, Authentication auth) {
+    User user = (User) auth.getPrincipal();
+    boolean isFav = userService.isFavorite(user.getId(), bookId);
+    return ResponseEntity.ok(Map.of("favorite", isFav));
 }
 }

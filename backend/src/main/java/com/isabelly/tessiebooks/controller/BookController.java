@@ -2,6 +2,7 @@ package com.isabelly.tessiebooks.controller;
 
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.isabelly.tessiebooks.dto.book.BookRequest;
 import com.isabelly.tessiebooks.dto.book.BookResponse;
+import com.isabelly.tessiebooks.entity.User;
 import com.isabelly.tessiebooks.service.BookService;
 
 @RestController
@@ -59,5 +61,16 @@ public class BookController {
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody BookRequest req) {
         BookResponse b = service.update(id, req);
         return b == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(b);
+    }
+
+
+    @GetMapping("/recommendations")
+    public ResponseEntity<List<BookResponse>> getRecommendations( Authentication auth) {
+        if (auth == null || auth.getPrincipal() == null) {
+            return ResponseEntity.ok(List.of());
+        }
+        User user = (User) auth.getPrincipal();
+        List<BookResponse> recommendations = service.getRecommendations(user.getId());
+        return ResponseEntity.ok(recommendations);
     }
 }

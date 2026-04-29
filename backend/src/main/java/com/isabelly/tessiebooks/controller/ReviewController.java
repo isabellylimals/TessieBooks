@@ -22,8 +22,11 @@ import com.isabelly.tessiebooks.entity.Review;
 import com.isabelly.tessiebooks.entity.User;
 import com.isabelly.tessiebooks.repository.BookRepository;
 import com.isabelly.tessiebooks.repository.ReviewRepository;
+import com.isabelly.tessiebooks.repository.UserRepository;
 import com.isabelly.tessiebooks.service.ReviewService;
 import com.isabelly.tessiebooks.service.UploadService;
+
+import jakarta.transaction.Transactional;
 
 @RestController
 @RequestMapping("/reviews")
@@ -33,15 +36,17 @@ public class ReviewController {
     private final BookRepository bookRepository;
     private final ReviewRepository reviewRepository;
     private final UploadService uploadService;
+private final UserRepository userRepository;
 
-    public ReviewController(ReviewService reviewService, BookRepository bookRepository, ReviewRepository reviewRepository, UploadService uploadService) {
-        this.reviewService = reviewService;
-        this.bookRepository = bookRepository;
-        this.reviewRepository = reviewRepository;
-        this.uploadService = uploadService;
-    }
-
-    // GET /reviews - retorna todas as reviews
+public ReviewController(ReviewService reviewService, BookRepository bookRepository, 
+                        ReviewRepository reviewRepository, UploadService uploadService,
+                        UserRepository userRepository) {
+    this.reviewService = reviewService;
+    this.bookRepository = bookRepository;
+    this.reviewRepository = reviewRepository;
+    this.uploadService = uploadService;
+    this.userRepository = userRepository;
+}
     @GetMapping
     public ResponseEntity<?> getAllReviews() {
         try {
@@ -100,6 +105,7 @@ public class ReviewController {
 
     // POST /reviews
     @PostMapping
+    @Transactional
 public ResponseEntity<?> createReview(Authentication auth, 
                                       @RequestParam("bookId") Long bookId,
                                       @RequestParam("title") String title,
@@ -154,19 +160,24 @@ public ResponseEntity<?> createReview(Authentication auth,
     }
 
     // POST /reviews/{id}/like
-    @PostMapping("/{id}/like")
-    public ResponseEntity<?> likeReview(@PathVariable Long id, Authentication auth) {
-        User user = (User) auth.getPrincipal();
-        try {
-            Review review = reviewService.likeReview(id, user);
-            Map<String, Object> response = new HashMap<>();
-            response.put("likes", review.getLikes().size());
-            response.put("liked", review.getLikes().contains(user));
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
+ // POST /reviews/{id}/like
+@PostMapping("/{id}/like")
+public ResponseEntity<?> likeReview(@PathVariable Long id, Authentication auth) {
+    User user = (User) auth.getPrincipal();
+    try {
+        // Recarregar o usuário do banco para garantir dados atualizados
+        User freshUser = userRepository.findById(user.getId())
+            .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+            
+        Review review = reviewService.likeReview(id, freshUser);
+        Map<String, Object> response = new HashMap<>();
+        response.put("likes", review.getLikes().size());
+        response.put("liked", review.getLikes().contains(freshUser));
+        return ResponseEntity.ok(response);
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(404).body(e.getMessage());
     }
+}
 
     // GET /reviews/{id}/has-liked
     @GetMapping("/{id}/has-liked")
