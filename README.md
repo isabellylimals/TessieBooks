@@ -2,7 +2,7 @@
 
 **TessieVerse** is a modern social network for book lovers, inspired by Victorian aesthetics and Dark Academia culture. Share reviews, track your reading progress, discover new books, and connect with fellow readers in an elegant, immersive environment.
 
-Java 23 | Spring Boot 3.5.7 | React 18 | PostgreSQL | Tailwind CSS | MIT License
+Java 23 | Spring Boot 3.5.7 | React 18 | PostgreSQL | Tailwind CSS 
 
 ---
 
@@ -145,11 +145,6 @@ Java 23 | Spring Boot 3.5.7 | React 18 | PostgreSQL | Tailwind CSS | MIT License
 
 ---
 
-## License
-
-This project is licensed under the MIT License.
-
----
 
 ## Author
 
